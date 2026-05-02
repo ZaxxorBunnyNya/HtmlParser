@@ -178,26 +178,26 @@ TEST(BasicTest, ShouldParseNestedItemsWithComments) {
     ASSERT_EQ(childs.size(), 6 );
 
     ASSERT_EQ(childs[0]->getChildren().size(), 1);
-    ASSERT_EQ(childs[0]->getChildren()[0]->getText(), "1");
-    ASSERT_EQ(childs[0]->getChildren()[0]->getType(), HtmlParser::HtmlNodeType::Element);
+    ASSERT_EQ(childs[0]->getType(), HtmlParser::HtmlNodeType::Comment);
+    ASSERT_EQ(childs[0]->getChildren()[0]->getText(), " COMMENT1 ");
 
     ASSERT_EQ(childs[1]->getChildren().size(), 1);
-    ASSERT_EQ(childs[1]->getChildren()[0]->getText(), " COMMENT1 ");
-    ASSERT_EQ(childs[1]->getChildren()[0]->getType(), HtmlParser::HtmlNodeType::Comment);
+    ASSERT_EQ(childs[1]->getType(), HtmlParser::HtmlNodeType::Element);
+    ASSERT_EQ(childs[1]->getChildren()[0]->getText(), "1");
 
     ASSERT_EQ(childs[2]->getChildren().size(), 1);
-    ASSERT_EQ(childs[2]->getChildren()[0]->getText(), "2");
-    ASSERT_EQ(childs[2]->getChildren()[0]->getType(), HtmlParser::HtmlNodeType::Element);
+    ASSERT_EQ(childs[2]->getType(), HtmlParser::HtmlNodeType::Comment);
+    ASSERT_EQ(childs[2]->getChildren()[0]->getText(), " COMMENT2 ");
 
     ASSERT_EQ(childs[3]->getChildren().size(), 1);
-    ASSERT_EQ(childs[3]->getChildren()[0]->getText(), " COMMENT2 ");
-    ASSERT_EQ(childs[3]->getChildren()[0]->getType(), HtmlParser::HtmlNodeType::Comment);
+    ASSERT_EQ(childs[3]->getType(), HtmlParser::HtmlNodeType::Element);
+    ASSERT_EQ(childs[3]->getChildren()[0]->getText(), "2");
 
     ASSERT_EQ(childs[4]->getChildren().size(), 1);
-    ASSERT_EQ(childs[4]->getChildren()[0]->getText(), "3");
-    ASSERT_EQ(childs[4]->getChildren()[0]->getType(), HtmlParser::HtmlNodeType::Element);
+    ASSERT_EQ(childs[4]->getType(), HtmlParser::HtmlNodeType::Comment);
+    ASSERT_EQ(childs[4]->getChildren()[0]->getText(), " COMMENT3 ");
 
     ASSERT_EQ(childs[5]->getChildren().size(), 1);
-    ASSERT_EQ(childs[5]->getChildren()[0]->getText(), " COMMENT3 ");
-    ASSERT_EQ(childs[5]->getChildren()[0]->getType(), HtmlParser::HtmlNodeType::Comment);
+    ASSERT_EQ(childs[5]->getType(), HtmlParser::HtmlNodeType::Element);
+    ASSERT_EQ(childs[5]->getChildren()[0]->getText(), "3");
 }
