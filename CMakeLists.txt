@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.31.6)
+cmake_minimum_required(VERSION 3.14)
 project(HtmlParser)
 
 set(CMAKE_CXX_STANDARD 20)

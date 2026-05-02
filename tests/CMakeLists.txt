@@ -1,5 +1,6 @@
-cmake_minimum_required(VERSION 3.31.6)
+cmake_minimum_required(VERSION 3.14)
 project(parser_tests)
+enable_testing()
 
 include(FetchContent)
 
@@ -19,3 +20,5 @@ link_libraries(parser_tests HtmlParser)
 # Enable testing and discovery
 include(GoogleTest)
 gtest_discover_tests(parser_tests)
+
+add_test(NAME Basic COMMAND parser_tests)
