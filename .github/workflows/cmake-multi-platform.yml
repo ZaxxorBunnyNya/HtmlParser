@@ -72,4 +72,4 @@ jobs:
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
 
       run:
-        ctest --test-dir ${{ steps.strings.outputs.build-output-dir }} --output-on-failure --verbose
+        ctest --test-dir ${{ steps.strings.outputs.build-output-dir }}/tests/ --output-on-failure --verbose
