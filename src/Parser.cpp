@@ -88,8 +88,6 @@ namespace HtmlParser {
                                     parent->addChild(node);
                                     node = parent;
                                     parent = node->getParent();
-                                    node = parent;
-                                    parent = node->getParent();
 
                                     i += 2;
 

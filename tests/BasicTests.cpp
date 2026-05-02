@@ -94,7 +94,7 @@ TEST(BasicTests, ShouldParseNode) {
     ASSERT_EQ(text->getText(), "TEST");
 }
 
-TEST(BasicTests, ShouldParseTagAndNode) {
+TEST(BasicTests, ShouldParseCommentAndNode) {
     auto parser = HtmlParser::Parser();
 
     parser.Parse("<!-- COMMENT --> \n"
