@@ -6,6 +6,7 @@
 #define HTMLPARSER_HTMLNODE_TYPE_HPP
 
 namespace HtmlParser {
+
     enum class HtmlNodeType {
         Root,
         Comment,
@@ -13,6 +14,7 @@ namespace HtmlParser {
         Declaration,
         Text
     };
+
 }
 
 #endif //HTMLPARSER_HTMLNODE_TYPE_HPP

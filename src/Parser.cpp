@@ -12,8 +12,9 @@ namespace HtmlParser {
 
         this->m_root = std::make_shared<HtmlNode>("", HtmlNodeType::Root);
 
-        auto node =std::make_shared<HtmlNode>();
-        auto parent =  this->m_root;
+        auto node = std::make_shared<HtmlNode>();
+        auto parent = this->m_root;
+        std::string attributeName;
 
         std::string text;
 
@@ -32,8 +33,7 @@ namespace HtmlParser {
                 }
 
                 this->m_state = STATE::START_TAG;
-            } else if ((c == '\n' || c == ' ' || c =='\t') && this->m_state == STATE::INITIAL) {
-
+            } else if ((c == '\n' || c == ' ' || c == '\t') && this->m_state == STATE::INITIAL) {
             } else {
                 switch (this->m_state) {
                     case STATE::START_TAG:
@@ -103,11 +103,7 @@ namespace HtmlParser {
                             node->setTagName(text);
                             text.clear();
 
-                            node = parent;
-                            parent = node->getParent();
-
                             this->m_state = STATE::READING_ATTRIBUTES;
-
                             continue;
                         }
 
@@ -128,8 +124,50 @@ namespace HtmlParser {
 
                     case STATE::READING_ATTRIBUTES:
                         if (c == '>') {
-                            parent = parent->getParent();
+                            parent = node;
+
+                            this->m_state = STATE::INITIAL;
+                        } else if (c != ' ' && c != '\n' && c != '\t') {
+                            text += c;
+
+                            this->m_state = STATE::READING_ATTRIBUTE_NAME;
                         }
+                        break;
+                    case STATE::READING_ATTRIBUTE_NAME:
+                        if (c == ' ' || c == '\t' || c == '\n') {
+                            node->addAttribute(text, "");
+                        } else if (c == '=') {
+                            this->m_state = STATE::READING_ATTRIBUTE_VALUE;
+                            attributeName = text;
+
+                            text.clear();
+                        } else if ( c == '>') {
+                            node->addAttribute(text, "");
+                            text.clear();
+
+                            i--;
+                            this->m_state = STATE::READING_ATTRIBUTES;
+                        } else {
+                            text += c;
+                        }
+                        break;
+                    case STATE::READING_ATTRIBUTE_VALUE:
+                        if (c == ' ' || c == '\t' || c == '\n') {
+                            node->addAttribute(attributeName, text);
+
+                            text.clear();
+                            attributeName.clear();
+                        } else if ( c == '>') {
+                            node->addAttribute(attributeName, text);
+                            text.clear();
+                            attributeName.clear();
+
+                            i--;
+                            this->m_state = STATE::READING_ATTRIBUTES;
+                        } else {
+                            text += c;
+                        }
+                        break;
                     case STATE::INITIAL:
                         text += c;
                         break;

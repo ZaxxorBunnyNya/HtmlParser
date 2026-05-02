@@ -201,3 +201,48 @@ TEST(BasicTest, ShouldParseNestedItemsWithComments) {
     ASSERT_EQ(childs[5]->getType(), HtmlParser::HtmlNodeType::Element);
     ASSERT_EQ(childs[5]->getChildren()[0]->getText(), "3");
 }
+
+TEST(BasicTest, ShouldParseAttributeDoubleQuotes) {
+    auto parser = HtmlParser::Parser();
+
+    const std::string html = "<p align=\"center\">text</p>";
+
+    parser.Parse(html);
+    const auto root = parser.getRoot();
+
+    ASSERT_NE(root, nullptr);
+    ASSERT_EQ(root->getChildren().size(), 1);
+
+    const auto divElement = root->getChildren()[0];
+    ASSERT_NE(divElement, nullptr);
+    ASSERT_EQ(divElement->getType(), HtmlParser::HtmlNodeType::Element);
+    ASSERT_EQ(divElement->getAttributes().size(), 1);
+
+    auto attributes = divElement->getAttributes();
+
+    ASSERT_NE(attributes.find("align"),  attributes.end());
+    ASSERT_EQ(attributes.at("align"), "center");
+}
+
+TEST(BasicTest, ShouldParseAttributeSingleQuotes) {
+    auto parser = HtmlParser::Parser();
+
+    const std::string html = "<p align='center'>text</p>";
+
+    parser.Parse(html);
+    const auto root = parser.getRoot();
+
+    ASSERT_NE(root, nullptr);
+    ASSERT_EQ(root->getChildren().size(), 1);
+
+    const auto divElement = root->getChildren()[0];
+    ASSERT_NE(divElement, nullptr);
+    ASSERT_EQ(divElement->getType(), HtmlParser::HtmlNodeType::Element);
+    ASSERT_EQ(divElement->getAttributes().size(), 1);
+
+    auto attributes = divElement->getAttributes();
+
+    ASSERT_NE(attributes.find("align"),  attributes.end());
+    ASSERT_EQ(attributes.at("align"), "center");
+}
+

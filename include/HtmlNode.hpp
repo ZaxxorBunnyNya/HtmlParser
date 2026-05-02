@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #include "HtmlNodeType.hpp"
@@ -15,18 +16,18 @@ namespace HtmlParser {
     class HtmlNode {
     public:
         explicit HtmlNode(
-            const std::string &_tag,
+            std::string _tag,
             const HtmlNodeType _type,
             const std::unordered_map<std::string, std::string> &_attributes,
-            const std::vector<std::shared_ptr<HtmlNode> > &_children) : m_tagName(_tag),
+            const std::vector<std::shared_ptr<HtmlNode> > &_children) : m_tagName(std::move(_tag)),
                                                                         m_children(_children),
                                                                         m_attributes(_attributes),
                                                                         m_type(_type) {
         }
 
-        explicit HtmlNode() {}
+        explicit HtmlNode() = default;
 
-        explicit HtmlNode(const std::string &_tag, const HtmlNodeType _type) : m_tagName(_tag), m_type(_type) {
+        explicit HtmlNode(std::string _tag, const HtmlNodeType _type) : m_tagName(std::move(_tag)), m_type(_type) {
             this->m_children.clear();
         }
 
@@ -34,7 +35,7 @@ namespace HtmlParser {
             this->m_tagName = _tagName;
         }
 
-        void setType(HtmlNodeType _type) {
+        void setType(const HtmlNodeType _type) {
             this->m_type = _type;
         }
 
@@ -50,7 +51,7 @@ namespace HtmlParser {
             return m_type;
         }
 
-        std::string getText() {return m_text;}
+        std::string getText() { return m_text; }
         std::string getTagName() { return m_tagName; }
         std::shared_ptr<HtmlNode> getParent() { return m_parent; }
 
@@ -60,10 +61,23 @@ namespace HtmlParser {
         void addChild(const std::shared_ptr<HtmlNode> &_child) { m_children.push_back(_child); }
 
         void addAttribute(const std::string &_attribute, const std::string &_value) {
-            m_attributes.insert({_attribute, _value});
+            m_attributes.insert({removeQuotes(_attribute), removeQuotes(_value)});
         }
 
     private:
+        static std::string removeQuotes(const std::string &_str) {
+            std::string str = _str;
+
+            if (str.size() >= 2 &&
+                (str.front() == '"' && str.back() == '"' ||
+                 str.front() == '\'' && str.back() == '\'')) {
+                str.erase(0, 1); // Remove the first character
+                str.pop_back(); // Remove the last character
+            }
+
+            return str;
+        };
+
         std::string m_tagName;
         std::string m_text;
         std::vector<std::shared_ptr<HtmlNode> > m_children;
