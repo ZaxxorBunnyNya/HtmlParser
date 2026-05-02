@@ -22,5 +22,3 @@ link_libraries(parser_tests HtmlParser)
 # Enable testing and discovery
 include(GoogleTest)
 gtest_discover_tests(parser_tests)
-
-add_test(NAME Basic COMMAND parser_tests)
