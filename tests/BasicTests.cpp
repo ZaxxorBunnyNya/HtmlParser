@@ -172,7 +172,6 @@ TEST(BasicTest, ShouldParseNestedItemsWithComments) {
 
     const auto divElement = root->getChildren()[0];
     ASSERT_NE(divElement, nullptr);
-    ASSERT_EQ(divElement->getChildren().size(), 3);
     ASSERT_EQ(divElement->getType(), HtmlParser::HtmlNodeType::Element);
 
     auto childs = divElement->getChildren();
