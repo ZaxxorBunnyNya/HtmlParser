@@ -15,7 +15,7 @@ namespace HtmlParser {
         auto node =std::make_shared<HtmlNode>();
         auto parent =  this->m_root;
 
-        std::string text = "";
+        std::string text;
 
         for (int i = 0; i < _html.length(); i++) {
             const auto c = _html[i];
@@ -142,7 +142,5 @@ namespace HtmlParser {
                 }
             }
         }
-
-        return;
     }
 } // HtmlParser
