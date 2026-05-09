@@ -1,5 +1,5 @@
 //
-// Created by maxim on 01.05.2026.
+// Created by Zaxxor on 01.05.2026.
 //
 
 #include "Parser.h"

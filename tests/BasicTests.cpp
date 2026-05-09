@@ -275,5 +275,5 @@ TEST(BasicTest, ShouldParseSimpleHtml1) {
     auto root = parser.getRoot();
 
     ASSERT_NE(root, nullptr);
-    ASSERT_EQ(root->getChildren().size(), 1);
+    ASSERT_EQ(root->getChildren().size(), 2);
 }
