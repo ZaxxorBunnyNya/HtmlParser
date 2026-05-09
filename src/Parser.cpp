@@ -33,7 +33,7 @@ namespace HtmlParser {
 
                     parent->addChild(node);
 
-                    if (node->getType() != HtmlNodeType::Text) {
+                    if (node->getType() != HtmlNodeType::Text && node->getType() != HtmlNodeType::Declaration) {
                         parent = node;
                     }
 
@@ -61,13 +61,19 @@ namespace HtmlParser {
                     }
                     break;
                 case STATE::READING_ATTRIBUTES:
-                    this->workOnReadingAttributes(i, tokens, node, parent);
+                    i = this->workOnReadingAttributes(i, tokens, node, parent);
                     break;
                 case STATE::READING_TAG_TERMINATOR:
                     if (tokens[i].type == TokenType::TagEnd) {
                         this->m_state = STATE::INITIAL;
-                        parent = parent->getParent();
+
+                        if (parent != nullptr) {
+                            parent = parent->getParent();
+                        }
                     }
+                    break;
+                case STATE::READING_SELF_CLOSING_ELEMENT:
+                     i = this->workOnReadingSelfClosingElement(i, tokens, node, parent);
                     break;
 
                 default:
@@ -113,12 +119,18 @@ namespace HtmlParser {
             this->m_state = STATE::READING_TAG_TERMINATOR;
 
             return nullptr;
+        } else if (token.type == TokenType::DeclaratorStart) {
+            auto node = std::make_shared<HtmlNode>("", HtmlNodeType::Declaration);
+            node->setParent(_parent);
+            this->m_state = STATE::READING_SELF_CLOSING_ELEMENT;
+
+            return node;
         }
 
         return nullptr;
     }
 
-    std::shared_ptr<HtmlNode>  Parser::workOnReadingAttributes(const size_t &_counter,const std::vector<Token> &_tokens,const std::shared_ptr<HtmlNode> &_node,
+    size_t  Parser::workOnReadingAttributes(const size_t &_counter,const std::vector<Token> &_tokens,const std::shared_ptr<HtmlNode> &_node,
                                      const std::shared_ptr<HtmlNode> &_parent) {
         auto curToken = _tokens[_counter];
         std::string attributeName;
@@ -128,6 +140,8 @@ namespace HtmlParser {
 
         while (true) {
             if (curToken.type == TokenType::TagEnd) {
+                this->m_state = STATE::INITIAL;
+
                 break;
             }
 
@@ -151,6 +165,28 @@ namespace HtmlParser {
 
         this->m_state = STATE::INITIAL;
 
-        return _node;
+        return counter;
+    }
+
+    size_t Parser::workOnReadingSelfClosingElement(const size_t &_counter, const std::vector<Token> &_tokens,
+                                                  const std::shared_ptr<HtmlNode> &_node,
+                                                  const std::shared_ptr<HtmlNode> &_parent) {
+        auto curToken = _tokens[_counter];
+        std::string attributeName;
+        bool isHasAssign = false;
+        size_t counter = _counter;
+
+        while (true) {
+            if (curToken.type == TokenType::TagEnd) {
+                this->m_state = STATE::INITIAL;
+
+                break;
+            }
+
+            counter+= 1;
+            curToken = _tokens[counter];
+        }
+
+        return counter;
     }
 } // HtmlParser

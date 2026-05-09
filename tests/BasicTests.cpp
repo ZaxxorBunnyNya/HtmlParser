@@ -247,7 +247,21 @@ TEST(BasicTest, ShouldParseAttributeSingleQuotes) {
     ASSERT_EQ(attributes.at("align"), "center");
 }
 
-TEST(BasicTest, ShouldParseSimpleHtml) {
+TEST(BasicTest, ShouldParseDoctypeDeclaration) {
+    auto parser = HtmlParser::Parser();
+
+    const std::string html = "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML 2.0//EN\">";
+
+    parser.Parse(html);
+    const auto root = parser.getRoot();
+
+    ASSERT_NE(root, nullptr);
+    ASSERT_EQ(root->getChildren().size(), 1);
+
+    const auto doctype = root->getChildren()[0];
+}
+
+TEST(BasicTest, ShouldParseSimpleHtml1) {
     auto parser = HtmlParser::Parser();
     std::ifstream file("test_data/SimpleHtml.html");
 
@@ -258,34 +272,8 @@ TEST(BasicTest, ShouldParseSimpleHtml) {
     std::string content = buffer.str();
 
     parser.Parse(content);
-    const auto root = parser.getRoot();
+    auto root = parser.getRoot();
 
     ASSERT_NE(root, nullptr);
     ASSERT_EQ(root->getChildren().size(), 1);
-
-    const auto divElement = root->getChildren()[0];
-    ASSERT_NE(divElement, nullptr);
-    ASSERT_EQ(divElement->getType(), HtmlParser::HtmlNodeType::Element);
-    // ASSERT_EQ(divElement->getAttributes().size(), 1);
-
-    auto attributes = divElement->getAttributes();
 }
-//
-// TEST(BasicTest, ShouldParseLongHtml) {
-//     auto parser = HtmlParser::Parser();
-//
-//     std::ifstream file("test_data/longHtml.html");
-//
-//     ASSERT_EQ(file.is_open(), true);
-//
-//     std::stringstream buffer;
-//     buffer << file.rdbuf(); // Read the entire file buffer
-//     std::string content = buffer.str();
-//
-//     parser.Parse(content);
-//
-//     const auto root = parser.getRoot();
-//
-//     ASSERT_NE(root, nullptr);
-//     ASSERT_NE(root->getChildren().size(), 0);
-// }

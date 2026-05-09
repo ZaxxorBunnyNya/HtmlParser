@@ -9,11 +9,16 @@
 namespace HtmlParser {
     std::vector<Token> Tokenizer::Tokenize(const std::string &_text) {
         std::vector<Token> tokens;
+        bool isTagStarting = false;
 
         for (size_t i = 0; i < _text.length();) {
             auto curSymbol = _text[i];
 
-            if (curSymbol == '<') {
+            if (isTagStarting == true) {
+                i += tokenizeTag(_text, tokens, i);
+
+                isTagStarting = false;
+            } else if (curSymbol == '<') {
                 if (_text.size() > i + 3) {
                     if (_text[i + 1] == '!' && _text[i + 2] == '-' && _text[i + 3] == '-') {
                         i += tokenizeComment(_text, tokens, i) - 1;
@@ -27,10 +32,24 @@ namespace HtmlParser {
                         i += tokenizeTagCloser(_text, tokens, i);
 
                         continue;
+                    } else if (_text[i + 1] == '!') {
+                        tokens.push_back({
+                            "<!", TokenType::DeclaratorStart
+                        });
+
+                        i += 2;
+
+                        isTagStarting = true;
+                    } else {
+                        tokens.push_back({
+                            "<", TokenType::TagStart
+                        });
+
+                        i++;
+
+                        isTagStarting = true;
                     }
                 }
-
-                i += tokenizeTag(_text, tokens, i);
             } else {
                 auto tokenVal = makeMultiwordText(_text, i);
 
@@ -128,7 +147,7 @@ namespace HtmlParser {
                     text, TokenType::QuotedText
                 });
 
-                i = quotedEnd ;
+                i = quotedEnd;
             } else {
                 auto tokenVal = makeWord(_text, i);
 

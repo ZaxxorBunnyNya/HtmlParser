@@ -17,6 +17,7 @@ namespace HtmlParser {
         END_TAG,
         READING_COMMENT,
         END_COMMENT,
+        READING_SELF_CLOSING_ELEMENT,
     };
 
     class Parser {
@@ -34,7 +35,11 @@ namespace HtmlParser {
         std::shared_ptr<HtmlNode> workOnInitialState(const size_t &_counter, const std::vector<Token> &_tokens,
                                                      const std::shared_ptr<HtmlNode> &_parent);
 
-        std::shared_ptr<HtmlNode> workOnReadingAttributes(const size_t &_counter, const std::vector<Token> &_tokens,
+        size_t workOnReadingAttributes(const size_t &_counter, const std::vector<Token> &_tokens,
+                                                          const std::shared_ptr<HtmlNode> &_node,
+                                                          const std::shared_ptr<HtmlNode> &_parent);
+
+        size_t workOnReadingSelfClosingElement(const size_t &_counter, const std::vector<Token> &_tokens,
                                                           const std::shared_ptr<HtmlNode> &_node,
                                                           const std::shared_ptr<HtmlNode> &_parent);
     };
