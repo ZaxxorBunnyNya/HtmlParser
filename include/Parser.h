@@ -4,17 +4,15 @@
 
 #include "HtmlNode.hpp"
 #include "HtmlVersion.hpp"
+#include "Tokenizer.hpp"
 
 namespace HtmlParser {
-
     enum STATE {
         INITIAL,
         START_TAG,
         READING_TAG,
         READING_TAG_TERMINATOR,
         READING_ATTRIBUTES,
-        READING_ATTRIBUTE_NAME,
-        READING_ATTRIBUTE_VALUE,
         READING_TEXT,
         END_TAG,
         READING_COMMENT,
@@ -32,6 +30,13 @@ namespace HtmlParser {
         std::shared_ptr<HtmlNode> m_root;
         HtmlVersion m_version = HtmlVersion::VERSION_3_2;
         STATE m_state = STATE::INITIAL;
+
+        std::shared_ptr<HtmlNode> workOnInitialState(const size_t &_counter, const std::vector<Token> &_tokens,
+                                                     const std::shared_ptr<HtmlNode> &_parent);
+
+        std::shared_ptr<HtmlNode> workOnReadingAttributes(const size_t &_counter, const std::vector<Token> &_tokens,
+                                                          const std::shared_ptr<HtmlNode> &_node,
+                                                          const std::shared_ptr<HtmlNode> &_parent);
     };
 } // HtmlParser
 

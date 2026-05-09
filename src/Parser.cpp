@@ -4,6 +4,8 @@
 
 #include "Parser.h"
 
+#include <regex>
+
 namespace HtmlParser {
     void Parser::Parse(const std::string &_html) {
         if (_html.empty()) {
@@ -11,174 +13,144 @@ namespace HtmlParser {
         }
 
         this->m_root = std::make_shared<HtmlNode>("", HtmlNodeType::Root);
+        auto node = std::make_shared<HtmlNode>("", HtmlNodeType::Root);
+        this->m_state = STATE::INITIAL;
 
-        auto node = std::make_shared<HtmlNode>();
         auto parent = this->m_root;
         std::string attributeName;
 
-        std::string text;
+        auto tokenizer = Tokenizer();
+        const auto tokens = tokenizer.Tokenize(_html);
 
-        for (int i = 0; i < _html.length(); i++) {
-            const auto c = _html[i];
+        for (size_t i = 0; i < tokens.size(); i++) {
+            switch (this->m_state) {
+                case STATE::INITIAL:
+                    node = this->workOnInitialState(i, tokens, parent);
 
-            if (c == '<' && this->m_state == STATE::INITIAL) {
-                if (text.empty() == false) {
-                    auto textNode = std::make_shared<HtmlNode>();
-                    textNode->setText(text);
-                    textNode->setType(HtmlNodeType::Text);
-                    textNode->setParent(parent);
-                    parent->addChild(textNode);
+                    if (node == nullptr) {
+                        continue;
+                    }
 
-                    text.clear();
-                }
+                    parent->addChild(node);
 
-                this->m_state = STATE::START_TAG;
-            } else if ((c == '\n' || c == ' ' || c == '\t') && this->m_state == STATE::INITIAL) {
-            } else {
-                switch (this->m_state) {
-                    case STATE::START_TAG:
-                        if (_html.length() > i + 2) {
-                            if (_html[i] == '!' && _html[i + 1] == '-' && _html[i + 2] == '-') {
-                                node = std::make_shared<HtmlNode>();
+                    if (node->getType() != HtmlNodeType::Text) {
+                        parent = node;
+                    }
 
-                                parent->addChild(node);
-                                node->setParent(parent);
+                    break;
+                case STATE::READING_TAG:
+                    if (tokens[i].type == TokenType::TagEnd) {
+                        parent = node->getParent();
 
-                                this->m_state = STATE::READING_COMMENT;
-                                node->setType(HtmlNodeType::Comment);
+                        continue;
+                    }
 
-                                i += 2;
-                                continue;
-                            }
-                        }
+                    node->setTagName(tokens[i].val);
+                    this->m_state = STATE::READING_ATTRIBUTES;
 
-                        if (_html[i] == '/') {
-                            this->m_state = STATE::READING_TAG_TERMINATOR;
-                            parent = node->getParent();
-
-                            continue;
-                        }
-
-                        text += c;
-
-                        node = std::make_shared<HtmlNode>();
-
+                    break;
+                case STATE::READING_COMMENT:
+                    if (tokens[i].type == TokenType::CommentEnd) {
+                        this->m_state = STATE::INITIAL;
+                        parent = parent->getParent();
+                    } else {
+                        node = std::make_shared<HtmlNode>("", HtmlNodeType::Text);
                         node->setParent(parent);
-                        node->setType(HtmlNodeType::Element);
+                        node->setText(tokens[i].val);
                         parent->addChild(node);
+                    }
+                    break;
+                case STATE::READING_ATTRIBUTES:
+                    this->workOnReadingAttributes(i, tokens, node, parent);
+                    break;
+                case STATE::READING_TAG_TERMINATOR:
+                    if (tokens[i].type == TokenType::TagEnd) {
+                        this->m_state = STATE::INITIAL;
+                        parent = parent->getParent();
+                    }
+                    break;
 
-                        this->m_state = STATE::READING_TAG;
-                        break;
-
-                    case STATE::READING_COMMENT:
-                        if (c == '-') {
-                            if (_html.length() > i + 2) {
-                                if (_html[i] == '-' && _html[i + 1] == '-' && _html[i + 2] == '>') {
-                                    this->m_state = STATE::INITIAL;
-
-                                    parent = node;
-
-                                    node = std::make_shared<HtmlNode>();
-                                    node->setParent(parent);
-
-                                    node->setType(HtmlNodeType::Text);
-                                    node->setText(text);
-                                    text.clear();
-
-                                    parent->addChild(node);
-                                    node = parent;
-                                    parent = node->getParent();
-
-                                    i += 2;
-
-                                    continue;
-                                }
-                            }
-                        }
-                        text += c;
-                        break;
-
-                    case STATE::READING_TAG:
-                        if (c == ' ') {
-                            node->setTagName(text);
-                            text.clear();
-
-                            this->m_state = STATE::READING_ATTRIBUTES;
-                            continue;
-                        }
-
-                        if (c == '>') {
-                            node->setTagName(text);
-
-                            text.clear();
-
-                            parent = node;
-
-                            this->m_state = STATE::INITIAL;
-                            continue;
-                        }
-
-                        text += c;
-
-                        break;
-
-                    case STATE::READING_ATTRIBUTES:
-                        if (c == '>') {
-                            parent = node;
-
-                            this->m_state = STATE::INITIAL;
-                        } else if (c != ' ' && c != '\n' && c != '\t') {
-                            text += c;
-
-                            this->m_state = STATE::READING_ATTRIBUTE_NAME;
-                        }
-                        break;
-                    case STATE::READING_ATTRIBUTE_NAME:
-                        if (c == ' ' || c == '\t' || c == '\n') {
-                            node->addAttribute(text, "");
-                        } else if (c == '=') {
-                            this->m_state = STATE::READING_ATTRIBUTE_VALUE;
-                            attributeName = text;
-
-                            text.clear();
-                        } else if ( c == '>') {
-                            node->addAttribute(text, "");
-                            text.clear();
-
-                            i--;
-                            this->m_state = STATE::READING_ATTRIBUTES;
-                        } else {
-                            text += c;
-                        }
-                        break;
-                    case STATE::READING_ATTRIBUTE_VALUE:
-                        if (c == ' ' || c == '\t' || c == '\n') {
-                            node->addAttribute(attributeName, text);
-
-                            text.clear();
-                            attributeName.clear();
-                        } else if ( c == '>') {
-                            node->addAttribute(attributeName, text);
-                            text.clear();
-                            attributeName.clear();
-
-                            i--;
-                            this->m_state = STATE::READING_ATTRIBUTES;
-                        } else {
-                            text += c;
-                        }
-                        break;
-                    case STATE::INITIAL:
-                        text += c;
-                        break;
-                    case STATE::READING_TAG_TERMINATOR:
-                        if (c == '>') {
-                            this->m_state = STATE::INITIAL;
-                        }
-                        break;
-                    default: ;
-                }
+                default:
+                    break;
             }
         }
+    }
+
+    std::shared_ptr<HtmlNode> Parser::workOnInitialState(const size_t &_counter, const std::vector<Token> &_tokens,
+                                                         const std::shared_ptr<HtmlNode> &_parent) {
+        auto token = _tokens[_counter];
+
+        if (token.type == TokenType::CommentStart) {
+            auto node = std::make_shared<HtmlNode>("", HtmlNodeType::Comment);
+            node->setParent(_parent);
+            this->m_state = STATE::READING_COMMENT;
+
+            return node;
+        } else if (token.type == TokenType::MultiwordText) {
+            std::regex pattern("[a-zA-Z0-9]");
+
+            auto searchOn = token.val.substr(0, token.val.size());
+
+            auto reBegin = std::sregex_iterator(searchOn.begin(), searchOn.end(), pattern);
+            auto reEnd = std::sregex_iterator();
+
+            if (reBegin == reEnd) {
+                return nullptr;
+            }
+
+            auto node = std::make_shared<HtmlNode>("", HtmlNodeType::Text);
+            node->setText(token.val);
+            node->setParent(_parent);
+
+            return node;
+        } else if (token.type == TokenType::TagStart) {
+            auto node = std::make_shared<HtmlNode>("", HtmlNodeType::Element);
+            node->setParent(_parent);
+            this->m_state = STATE::READING_TAG;
+
+            return node;
+        } else if (token.type == TokenType::TagCloserStart) {
+            this->m_state = STATE::READING_TAG_TERMINATOR;
+
+            return nullptr;
+        }
+
+        return nullptr;
+    }
+
+    std::shared_ptr<HtmlNode>  Parser::workOnReadingAttributes(const size_t &_counter,const std::vector<Token> &_tokens,const std::shared_ptr<HtmlNode> &_node,
+                                     const std::shared_ptr<HtmlNode> &_parent) {
+        auto curToken = _tokens[_counter];
+        std::string attributeName;
+        bool isHasAssign = false;
+
+        size_t counter = _counter;
+
+        while (true) {
+            if (curToken.type == TokenType::TagEnd) {
+                break;
+            }
+
+            if (isHasAssign == true) {
+                if (curToken.type == TokenType::Word || curToken.type == TokenType::QuotedText) {
+                    _node->addAttribute(attributeName, curToken.val);
+                }
+            } else {
+                if (curToken.type == TokenType::Word || curToken.type == TokenType::QuotedText) {
+                    attributeName = curToken.val;
+                }
+            }
+
+            if (curToken.type == TokenType::AssignSymbol) {
+                isHasAssign = true;
+            }
+
+            counter+= 1;
+            curToken = _tokens[counter];
+        }
+
+        this->m_state = STATE::INITIAL;
+
+        return _node;
     }
 } // HtmlParser

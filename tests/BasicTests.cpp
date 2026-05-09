@@ -4,6 +4,7 @@
 
 #include <gtest/gtest.h>
 
+#include <fstream>
 #include "Parser.h"
 
 TEST(BasicTests, ShouldReturnNullptrOnEmptyString) {
@@ -140,7 +141,7 @@ TEST(BasicTest, ShouldParseNestedItems) {
     ASSERT_EQ(divElement->getType(), HtmlParser::HtmlNodeType::Element);
 
     auto childs = divElement->getChildren();
-    ASSERT_EQ(childs.size(), 3 );
+    ASSERT_EQ(childs.size(), 3);
 
     ASSERT_EQ(childs[0]->getChildren().size(), 1);
     ASSERT_EQ(childs[0]->getChildren()[0]->getText(), "1");
@@ -175,7 +176,7 @@ TEST(BasicTest, ShouldParseNestedItemsWithComments) {
     ASSERT_EQ(divElement->getType(), HtmlParser::HtmlNodeType::Element);
 
     auto childs = divElement->getChildren();
-    ASSERT_EQ(childs.size(), 6 );
+    ASSERT_EQ(childs.size(), 6);
 
     ASSERT_EQ(childs[0]->getChildren().size(), 1);
     ASSERT_EQ(childs[0]->getType(), HtmlParser::HtmlNodeType::Comment);
@@ -220,7 +221,7 @@ TEST(BasicTest, ShouldParseAttributeDoubleQuotes) {
 
     auto attributes = divElement->getAttributes();
 
-    ASSERT_NE(attributes.find("align"),  attributes.end());
+    ASSERT_NE(attributes.find("align"), attributes.end());
     ASSERT_EQ(attributes.at("align"), "center");
 }
 
@@ -242,7 +243,49 @@ TEST(BasicTest, ShouldParseAttributeSingleQuotes) {
 
     auto attributes = divElement->getAttributes();
 
-    ASSERT_NE(attributes.find("align"),  attributes.end());
+    ASSERT_NE(attributes.find("align"), attributes.end());
     ASSERT_EQ(attributes.at("align"), "center");
 }
 
+TEST(BasicTest, ShouldParseSimpleHtml) {
+    auto parser = HtmlParser::Parser();
+    std::ifstream file("test_data/SimpleHtml.html");
+
+    ASSERT_EQ(file.is_open(), true);
+
+    std::stringstream buffer;
+    buffer << file.rdbuf(); // Read the entire file buffer
+    std::string content = buffer.str();
+
+    parser.Parse(content);
+    const auto root = parser.getRoot();
+
+    ASSERT_NE(root, nullptr);
+    ASSERT_EQ(root->getChildren().size(), 1);
+
+    const auto divElement = root->getChildren()[0];
+    ASSERT_NE(divElement, nullptr);
+    ASSERT_EQ(divElement->getType(), HtmlParser::HtmlNodeType::Element);
+    // ASSERT_EQ(divElement->getAttributes().size(), 1);
+
+    auto attributes = divElement->getAttributes();
+}
+//
+// TEST(BasicTest, ShouldParseLongHtml) {
+//     auto parser = HtmlParser::Parser();
+//
+//     std::ifstream file("test_data/longHtml.html");
+//
+//     ASSERT_EQ(file.is_open(), true);
+//
+//     std::stringstream buffer;
+//     buffer << file.rdbuf(); // Read the entire file buffer
+//     std::string content = buffer.str();
+//
+//     parser.Parse(content);
+//
+//     const auto root = parser.getRoot();
+//
+//     ASSERT_NE(root, nullptr);
+//     ASSERT_NE(root->getChildren().size(), 0);
+// }

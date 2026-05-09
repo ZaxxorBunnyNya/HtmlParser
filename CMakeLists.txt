@@ -4,6 +4,6 @@ project(HtmlParser)
 set(CMAKE_CXX_STANDARD 20)
 
 include_directories(include)
-add_library(HtmlParser STATIC src/Parser.cpp)
+add_library(HtmlParser STATIC src/Parser.cpp src/Tokenizer.cpp)
 
 add_subdirectory(tests)
