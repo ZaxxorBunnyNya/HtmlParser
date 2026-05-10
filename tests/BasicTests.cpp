@@ -259,6 +259,12 @@ TEST(BasicTest, ShouldParseDoctypeDeclaration) {
     ASSERT_EQ(root->getChildren().size(), 1);
 
     const auto doctype = root->getChildren()[0];
+    auto attributes = doctype->getAttributes();
+
+    ASSERT_NE(attributes.find("HTML"), attributes.end());
+    ASSERT_NE(attributes.find("PUBLIC"), attributes.end());
+    ASSERT_NE(attributes.find("HTML"), attributes.end());
+    ASSERT_NE(attributes.find("-//IETF//DTD HTML 2.0//EN"), attributes.end());
 }
 
 TEST(BasicTest, ShouldParseSimpleHtml1) {

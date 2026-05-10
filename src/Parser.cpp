@@ -5,6 +5,7 @@
 #include "Parser.h"
 
 #include <regex>
+#include <unordered_set>
 
 namespace HtmlParser {
     void Parser::Parse(const std::string &_html) {
@@ -46,7 +47,12 @@ namespace HtmlParser {
                     }
 
                     node->setTagName(tokens[i].val);
-                    this->m_state = STATE::READING_ATTRIBUTES;
+
+                    if (requiresClosingTag(tokens[i].val) == true) {
+                        this->m_state = STATE::READING_ATTRIBUTES;
+                    } else {
+                        this->m_state = STATE::READING_SELF_CLOSING_ELEMENT;
+                    }
 
                     break;
                 case STATE::READING_COMMENT:
@@ -145,18 +151,22 @@ namespace HtmlParser {
                 break;
             }
 
+            if (curToken.type == TokenType::AssignSymbol) {
+                isHasAssign = true;
+            }
+
             if (isHasAssign == true) {
                 if (curToken.type == TokenType::Word || curToken.type == TokenType::QuotedText) {
                     _node->addAttribute(attributeName, curToken.val);
+                    attributeName.clear();
                 }
             } else {
-                if (curToken.type == TokenType::Word || curToken.type == TokenType::QuotedText) {
+                if (attributeName.empty()) {
                     attributeName = curToken.val;
+                } else {
+                    _node->addAttribute(attributeName, "");
+                    attributeName.clear();
                 }
-            }
-
-            if (curToken.type == TokenType::AssignSymbol) {
-                isHasAssign = true;
             }
 
             counter+= 1;
@@ -180,7 +190,32 @@ namespace HtmlParser {
             if (curToken.type == TokenType::TagEnd) {
                 this->m_state = STATE::INITIAL;
 
+                if (attributeName.empty() == false) {
+                    _node->addAttribute(attributeName, "");
+                }
+
                 break;
+            }
+
+            if (curToken.type == TokenType::AssignSymbol) {
+                isHasAssign = true;
+            }
+
+            if (isHasAssign == true) {
+                if (curToken.type == TokenType::Word || curToken.type == TokenType::QuotedText) {
+                    _node->addAttribute(attributeName, curToken.val);
+                    attributeName.clear();
+                }
+            } else {
+                if (curToken.type == TokenType::Word || curToken.type == TokenType::QuotedText) {
+                    if (attributeName.empty()) {
+                        attributeName = curToken.val;
+                    } else {
+                        _node->addAttribute(attributeName, "");
+                        attributeName.clear();
+                        attributeName = curToken.val;
+                    }
+                }
             }
 
             counter+= 1;
@@ -188,5 +223,29 @@ namespace HtmlParser {
         }
 
         return counter;
+    }
+
+    /**
+     * @brief Проверяет, требуется ли закрывающий тег для указанного HTML-элемента.
+     * @param tagName Имя тега (например, "div", "BR", "img").
+     * @return true  - если тег требует закрытия (например, <p>, <div>)
+     *         false - если тег является void-элементом и закрытие не требуется (например, <br>, <img>)
+     */
+    bool Parser::requiresClosingTag(const std::string& tagName) {
+        if (tagName.empty()) return true;
+
+        // Приводим имя к нижнему регистру для регистронезависимого сравнения
+        std::string lowerName = tagName;
+        std::transform(lowerName.begin(), lowerName.end(), lowerName.begin(),
+                       [](unsigned char c) { return std::tolower(c); });
+
+        // Список void-элементов согласно спецификации HTML5
+        static const std::unordered_set<std::string> voidElements = {
+            "area", "base", "br", "col", "embed", "hr", "img",
+            "input", "link", "meta", "param", "source", "track", "wbr"
+        };
+
+        // Если тег НЕ найден в списке void-элементов, он требует закрытия
+        return !voidElements.contains(lowerName);
     }
 } // HtmlParser

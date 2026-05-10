@@ -42,6 +42,8 @@ namespace HtmlParser {
         size_t workOnReadingSelfClosingElement(const size_t &_counter, const std::vector<Token> &_tokens,
                                                           const std::shared_ptr<HtmlNode> &_node,
                                                           const std::shared_ptr<HtmlNode> &_parent);
+
+        static bool requiresClosingTag(const std::string& tagName);
     };
 } // HtmlParser
 
