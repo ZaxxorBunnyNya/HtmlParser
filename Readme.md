@@ -1,4 +1,3 @@
-```markdown
 # 🌐 HtmlParserCpp
 
 [![C++](https://img.shields.io/badge/C%2B%2B-17-blue.svg)](https://isocpp.org/)
@@ -6,13 +5,13 @@
 
 A lightweight and fast C++ library for parsing HTML documents. It allows you to load HTML from strings or files, build a DOM tree, and easily extract data without external dependencies.
 
-## ✨ Features
+## Features
 - 📦 Parse HTML strings
 - 📝 Extract text content, attributes, and inner HTML
 - 🌍 Cross-platform: Linux, Windows, macOS
 - ⚡ Zero external dependencies (uses only the C++ Standard Library)
 
-## 📋 Requirements
+##  Requirements
 - Compiler with **C++17** support or newer
 - **CMake 3.14+**
 
@@ -31,7 +30,7 @@ cmake --build . --config Release
 
 After building, you can integrate the library into your project using `find_package(HtmlParserCpp)` or by adding the `include/` directory to your compiler's include path and linking the generated library.
 
-## 💻 Usage Example
+## Usage Example
 
 ```cpp
 #include <HtmlParser/Parser.h>
