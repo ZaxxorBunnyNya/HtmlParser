@@ -52,6 +52,10 @@ namespace HtmlParser {
                         this->m_state = STATE::READING_ATTRIBUTES;
                     } else {
                         this->m_state = STATE::READING_SELF_CLOSING_ELEMENT;
+
+                        if (node->getParent() != nullptr) {
+                            parent = node->getParent();
+                        }
                     }
 
                     break;
