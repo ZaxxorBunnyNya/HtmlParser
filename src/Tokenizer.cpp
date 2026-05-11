@@ -32,7 +32,9 @@ namespace HtmlParser {
                         i += tokenizeTagCloser(_text, tokens, i);
 
                         continue;
-                    } else if (_text[i + 1] == '!') {
+                    }
+
+                    if (_text[i + 1] == '!') {
                         tokens.push_back({
                             "<!", TokenType::DeclaratorStart
                         });
@@ -65,20 +67,16 @@ namespace HtmlParser {
     }
 
     std::string Tokenizer::makeWord(const std::string &_text, const size_t _offset) {
-        std::regex pattern("[^a-zA-Z0-9]");
+        size_t len = 0;
 
-        auto searchOn = _text.substr(_offset, _text.size() - _offset);
-
-        auto reBegin = std::sregex_iterator(searchOn.begin(), searchOn.end(), pattern);
-        auto reEnd = std::sregex_iterator();
-
-        for (std::sregex_iterator i = reBegin; i != reEnd; ++i) {
-            const std::smatch &match = *i;
-
-            return searchOn.substr(0, match.position());
+        while (_offset + len < _text.size() &&
+               std::isalnum(static_cast<unsigned char>(_text[_offset + len]))) {
+            ++len;
         }
 
-        return "";
+        if (len == 0) return "";
+
+        return std::string(_text.substr(_offset, len));
     }
 
     std::string Tokenizer::makeMultiwordText(const std::string &_text, const size_t _offset) {

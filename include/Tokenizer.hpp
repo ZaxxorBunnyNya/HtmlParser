@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <vector>
+#include <regex>
 #include "Token.hpp"
 
 namespace HtmlParser {

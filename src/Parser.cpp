@@ -18,7 +18,6 @@ namespace HtmlParser {
         this->m_state = STATE::INITIAL;
 
         auto parent = this->m_root;
-        std::string attributeName;
 
         auto tokenizer = Tokenizer();
         const auto tokens = tokenizer.Tokenize(_html);
@@ -94,7 +93,7 @@ namespace HtmlParser {
 
     std::shared_ptr<HtmlNode> Parser::workOnInitialState(const size_t &_counter, const std::vector<Token> &_tokens,
                                                          const std::shared_ptr<HtmlNode> &_parent) {
-        auto token = _tokens[_counter];
+        const auto& token = _tokens[_counter];
 
         if (token.type == TokenType::CommentStart) {
             auto node = std::make_shared<HtmlNode>("", HtmlNodeType::Comment);
@@ -232,8 +231,8 @@ namespace HtmlParser {
     /**
      * @brief Проверяет, требуется ли закрывающий тег для указанного HTML-элемента.
      * @param tagName Имя тега (например, "div", "BR", "img").
-     * @return true  - если тег требует закрытия (например, <p>, <div>)
-     *         false - если тег является void-элементом и закрытие не требуется (например, <br>, <img>)
+     * @return true  - если тег требует закрытия (например,<p>,<div>)
+     *         false - если тег является void-элементом и закрытие не требуется (например,<br>,<img>)
      */
     bool Parser::requiresClosingTag(const std::string& tagName) {
         if (tagName.empty()) return true;
