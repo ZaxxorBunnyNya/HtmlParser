@@ -1,4 +1,4 @@
-# 🌐 HtmlParserCpp
+# 🌐 HtmlParser
 
 [![C++](https://img.shields.io/badge/C%2B%2B-17-blue.svg)](https://isocpp.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -28,12 +28,12 @@ cmake ..
 cmake --build . --config Release
 ```
 
-After building, you can integrate the library into your project using `find_package(HtmlParserCpp)` or by adding the `include/` directory to your compiler's include path and linking the generated library.
+After building, you can integrate the library into your project using `find_package(HtmlParser)` or by adding the `include/` directory to your compiler's include path and linking the generated library.
 
 ## Usage Example
 
 ```cpp
-#include <HtmlParser/Parser.h>
+#include <Parser.h>
 #include <iostream>
 
 int main() {
